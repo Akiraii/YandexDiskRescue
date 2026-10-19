@@ -124,9 +124,9 @@ while(!cts.IsCancellationRequested)
             var combined=VerificationReport.RawPath(job.Id);
             if(File.Exists(combined))File.Delete(combined); // avoid stale success on failed check
             State(job.Id,"Проверка");
-            var args=new List<string>{job.Source,dest,"--one-way","--combined",combined};
-            if(job.UnlimitedManifestPath is not null)args.Add("--download"); // actually compare file contents
-            int verifyCode=await rclone.RunAsync("check",args,Log,jobCts.Token);
+            var checkArgs=new List<string>{job.Source,dest,"--one-way","--combined",combined};
+            if(job.UnlimitedManifestPath is not null)checkArgs.Add("--download"); // actually compare file contents
+            int verifyCode=await rclone.RunAsync("check",checkArgs,Log,jobCts.Token);
             var output=VerificationReport.Export(job,verifyCode);
             string status=copyCode==0 && verifyCode==0 ? "Завершено" : "Ошибка проверки";
             string details=$"Копирование {copyCode}, проверка {verifyCode}; HTML: {output.html}";
