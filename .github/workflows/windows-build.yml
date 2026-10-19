@@ -1,0 +1,73 @@
+name: Yandex Disk Rescue - Windows executable
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows-build:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: '1'
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Setup .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.16.0'
+      - name: Check source layout and helper checksum
+        shell: pwsh
+        run: |
+          python qa/static-check.py
+          if ($LASTEXITCODE -ne 0) { throw 'Static validation failed' }
+      - name: Download fixed rclone and verify SHA-256
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $url = 'https://github.com/rclone/rclone/releases/download/v1.75.2/rclone-v1.75.2-windows-amd64.zip'
+          $archive = Join-Path $env:RUNNER_TEMP 'rclone-v1.75.2-windows-amd64.zip'
+          Invoke-WebRequest -Uri $url -OutFile $archive
+          $expected = '8A9DB2BAD1DC79A65B3348FD857069598E2AAB7CF4D118B77B1DF23055AFF818'
+          $actual = (Get-FileHash -Path $archive -Algorithm SHA256).Hash
+          if ($actual -ne $expected) { throw "rclone hash mismatch: $actual" }
+          $extract = Join-Path $env:RUNNER_TEMP 'rclone-unpacked'
+          Expand-Archive -Path $archive -DestinationPath $extract
+          $binary = Get-ChildItem $extract -Recurse -Filter 'rclone.exe' -File | Select-Object -First 1
+          if (!$binary) { throw 'rclone executable missing from official ZIP' }
+          Copy-Item $binary.FullName 'tools/rclone.exe'
+          & 'tools/rclone.exe' version
+          if ($LASTEXITCODE -ne 0) { throw 'Downloaded rclone cannot run' }
+      - name: Install Inno Setup 6 (installer builder)
+        shell: pwsh
+        run: |
+          choco install innosetup --yes --no-progress
+          if ($LASTEXITCODE -ne 0) { throw 'Inno Setup installer dependency unavailable' }
+      - name: Build Windows self-contained binaries, portable ZIP and installer
+        shell: pwsh
+        run: |
+          & ./build-windows.ps1
+          if ($LASTEXITCODE -ne 0) { throw 'Windows build failed' }
+          if (!(Test-Path 'dist/app/YandexDiskRescue.exe')) { throw 'GUI EXE missing' }
+          if (!(Test-Path 'dist/app/Rescue.Worker.exe')) { throw 'Worker EXE missing' }
+          if (!(Test-Path 'dist/YandexDiskRescue-Portable.zip')) { throw 'Portable ZIP missing' }
+          if (!(Test-Path 'dist/YandexDiskRescue-Setup.exe')) { throw 'Installer missing' }
+      - name: Upload produced Windows package
+        uses: actions/upload-artifact@v4
+        with:
+          name: YandexDiskRescue-Windows-x64
+          path: |
+            dist/YandexDiskRescue-Portable.zip
+            dist/YandexDiskRescue-Setup.exe
+            dist/SHA256-files.csv
+          if-no-files-found: error
+          retention-days: 14

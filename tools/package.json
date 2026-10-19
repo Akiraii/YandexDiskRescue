@@ -1,0 +1,8 @@
+{
+  "name": "yandex-disk-rescue-unlimited-helper",
+  "private": true,
+  "version": "0.1.0",
+  "license": "MIT",
+  "engines": { "node": ">=20" },
+  "dependencies": { "playwright-core": "1.63.0" }
+}

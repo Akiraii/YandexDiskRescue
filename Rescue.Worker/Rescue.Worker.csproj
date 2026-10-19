@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net8.0-windows</TargetFramework><EnableWindowsTargeting>true</EnableWindowsTargeting><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><AssemblyName>Rescue.Worker</AssemblyName></PropertyGroup><ItemGroup><Compile Include="../YandexDiskRescue/Models/BackupJob.cs" Link="Models/BackupJob.cs"/><Compile Include="../YandexDiskRescue/Services/*.cs" Link="Services/%(Filename)%(Extension)" /></ItemGroup>  <ItemGroup>
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
+    <PackageReference Include="System.IO.FileSystem.AccessControl" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.10" />
+  </ItemGroup>
+</Project>
