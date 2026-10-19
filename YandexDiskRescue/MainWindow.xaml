@@ -1,77 +1,247 @@
-<Window x:Class="YandexDiskRescue.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="Yandex Disk Rescue — Completion" Width="1100" Height="820" MinWidth="780" MinHeight="600">
-    <Grid Margin="22">
-        <Grid.ColumnDefinitions><ColumnDefinition Width="280"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-        <Border Background="{StaticResource Panel}" CornerRadius="12" Padding="18" Margin="0,0,18,0">
-            <ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel>
-                <TextBlock Text="YANDEX DISK RESCUE" FontWeight="Bold" FontSize="18" Margin="0,0,0,20"/>
-                <TextBlock Text="Токен Яндекс Полигона"/>
-                <PasswordBox x:Name="TokenBox" PasswordChanged="TokenChanged"/>
-                <TextBlock Text="Без согласия токен не сохраняется. Для работы после закрытия GUI разрешите защищённое хранение DPAPI." TextWrapping="Wrap" Foreground="#9CA3AF" FontSize="12" Margin="0,0,0,16"/>
-                <CheckBox x:Name="SaveTokenCheck" Foreground="White" Margin="0,8,0,12"><TextBlock Text="Разрешить фоновую работу (токен DPAPI)" TextWrapping="Wrap"/></CheckBox>
-                <Button Content="Проверить подключение" Click="ConnectClick"/>
-                <TextBlock x:Name="ConnectionStatus" Text="Не подключено" Foreground="#FBBF24" TextWrapping="Wrap" Margin="0,12,0,22"/>
-                <TextBlock Text="Папка в облаке (пусто = весь Диск)" TextWrapping="Wrap"/>
-                <TextBox x:Name="SourceBox" Text=""/>
-                <Button Content="Посмотреть файлы" Click="ListClick"/>
-                <TextBlock Text="Папка назначения на ПК" Margin="0,24,0,0"/>
-                <TextBox x:Name="DestinationBox" Text=""/>
-                <Button Content="Выбрать папку…" Click="BrowseClick"/>
-                <TextBlock Text="Потоки передачи: 8" Margin="0,16,0,0"/>
-                <Slider x:Name="TransfersSlider" Minimum="1" Maximum="32" Value="8" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="TransfersChanged"/>
-                <TextBlock Text="Лимит скорости (КиБ/с; 0 = без ограничения)" Margin="0,10,0,0"/>
-                <TextBox x:Name="BandwidthBox" Text="0"/>
-                <TextBlock Text="Отложенный запуск (локальное время, необязательно)"/>
-                <DatePicker x:Name="ScheduleDate"/>
-                <TextBox x:Name="ScheduleTime" Text="09:00" ToolTip="ЧЧ:мм"/>
-                <CheckBox x:Name="RecurringDailyCheck" Content="Повторять ежедневное копирование" Foreground="White" Margin="0,6,0,10"/>
-                <Border Background="#26354A" CornerRadius="8" Padding="12" Margin="0,15,0,12"><StackPanel>
-                    <TextBlock Text="ФОТО ИЗ БЕЗЛИМИТА" FontWeight="Bold" FontSize="15"/>
-                    <TextBlock Text="Сначала проверьте квоту и соберите список. Перенос в облаке — отдельное действие с подтверждением." TextWrapping="Wrap" FontSize="12" Margin="0,8,0,12"/>
-                    <Button Content="Проверить квоту безлимита" Click="UnlimitedQuotaClick"/>
-                    <TextBlock x:Name="UnlimitedQuotaStatus" Text="Квота не проверена" TextWrapping="Wrap" FontSize="12" Margin="0,8,0,12"/>
-                    <TextBlock Text="Встроенный проверенный помощник yd.js"/>
-                    <TextBox x:Name="UnlimitedScriptBox" IsReadOnly="True" ToolTip="Запускается только встроенный помощник с проверенной SHA256"/>
-                    <TextBlock Text="Отдельный Chrome: сначала выполните вход в свой Яндекс Диск" TextWrapping="Wrap"/>
-                    <Button Content="Открыть отдельный Chrome" Click="UnlimitedChromeClick"/>
-                    <Button Content="Спасти фото: полный мастер" Click="UnlimitedRescueClick" FontWeight="Bold" Margin="0,10,0,12"/>
-                    <Button Content="1. Собрать список (без изменений)" Click="UnlimitedListClick" Margin="0,6,0,0"/>
-                    <Button Content="2. Перенести в обычную папку…" Click="UnlimitedMoveClick" Margin="0,6,0,0"/>
-                    <Button Content="3. Проверить список и перенесённые файлы" Click="UnlimitedStateClick" Margin="0,6,0,0"/>
-                    <Button Content="4. Скачать перенесённое и проверить" Click="UnlimitedDownloadClick" Margin="0,6,0,0"/>
-                    <Button Content="Удалить отдельный профиль браузера (Chrome закрыт)" Click="UnlimitedClearProfileClick" Margin="0,6,0,0"/>
-                    <TextBlock Text="Сохранённым считается только файл, проверенный после скачивания. При неполном списке, сбое или нехватке места мастер остановится." TextWrapping="Wrap" FontSize="12" Foreground="#FBBF24" Margin="0,10,0,0"/>
-                </StackPanel></Border>
-                <CheckBox x:Name="AutostartCheck" Content="Автозапуск копирования при входе в Windows" Checked="AutostartChanged" Unchecked="AutostartChanged" Foreground="White" Margin="0,10,0,10" />
-                <Button Content="Удалить сохранённый токен" Click="DeleteTokenClick"/>
-                <CheckBox x:Name="VerifyAfterCopy" Content="Проверить файлы после копирования" IsChecked="True" Foreground="White" Margin="0,14,0,0"/>
-            </StackPanel></ScrollViewer>
+<Window x:Class="YandexDiskRescue.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Yandex Disk Rescue" Width="1280" Height="850"
+        MinWidth="990" MinHeight="690" WindowStartupLocation="CenterScreen"
+        Background="{StaticResource Bg}" Foreground="{StaticResource Fg}">
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="76"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="37"/>
+    </Grid.RowDefinitions>
+
+    <!-- Identity and privacy indicators -->
+    <Border Grid.Row="0" Background="#111D2E" BorderBrush="#2B3D55" BorderThickness="0,0,0,1" Padding="24,12">
+      <Grid>
+        <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+        <Border Width="44" Height="44" Background="{StaticResource Accent}" CornerRadius="12" VerticalAlignment="Center" Margin="0,0,14,0">
+          <TextBlock Text="↓" FontSize="26" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
         </Border>
-        <Grid Grid.Column="1">
-            <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="210"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-            <TextBlock Text="Резервное копирование" FontSize="25" FontWeight="SemiBold" Margin="0,0,0,18"/>
-            <WrapPanel Grid.Row="1" Margin="0,0,0,12">
-                <Button x:Name="StartButton" Content="Добавить в очередь" Click="StartClick"/>
-                <Button x:Name="CancelButton" Content="Остановить проверку" Click="CancelClick" IsEnabled="False"/>
-                <Button Content="Пауза" Click="PauseJobClick"/>
-                <Button Content="Отменить задание" Click="CancelJobClick"/>
-                <Button Content="Продолжить" Click="ResumeClick"/>
-                <Button Content="Проверить выбранное" Click="VerifySelectedClick"/>
-                <Button Content="Отчёт" Click="OpenReportClick"/>
-                <Button Content="Очистить вывод" Click="ClearClick"/>
-            </WrapPanel>
-            <Border Grid.Row="2" Background="{StaticResource Panel}" CornerRadius="12" Padding="14" Margin="0,0,0,10">
-                <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
-                    <TextBlock Text="Очередь заданий (сохраняется на компьютере)" FontWeight="SemiBold" Margin="0,0,0,8"/>
-                    <ListBox x:Name="JobsList" Grid.Row="1" Background="#0B1220" Foreground="#E5E7EB"/>
-                </Grid>
+        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+          <TextBlock Text="Yandex Disk Rescue" FontSize="21" FontWeight="Bold"/>
+          <TextBlock Text="Безопасное сохранение файлов на компьютер" Foreground="{StaticResource Muted}" FontSize="12" Margin="0,2,0,0"/>
+        </StackPanel>
+        <Border Grid.Column="2" Background="#18382F" CornerRadius="15" Padding="12,7" VerticalAlignment="Center">
+          <StackPanel Orientation="Horizontal">
+            <Ellipse Width="8" Height="8" Fill="#42D6A1" VerticalAlignment="Center" Margin="0,0,7,0"/>
+            <TextBlock Text="Локальная обработка · без телеметрии" Foreground="#B9F4D8" FontSize="12"/>
+          </StackPanel>
+        </Border>
+      </Grid>
+    </Border>
+
+    <Grid Grid.Row="1" Margin="22,19,22,14">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="310"/>
+        <ColumnDefinition Width="18"/>
+        <ColumnDefinition Width="*"/>
+      </Grid.ColumnDefinitions>
+      <!-- Stable copy/connect controls in the left column -->
+      <Border Grid.Column="0" Style="{StaticResource PanelCard}" Padding="19,18">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+          <StackPanel>
+            <TextBlock Text="ПОДКЛЮЧЕНИЕ" Style="{StaticResource SectionHeading}"/>
+            <Border Background="#202E40" CornerRadius="8" Padding="10,9" Margin="0,0,0,16">
+              <StackPanel Orientation="Horizontal">
+                <Ellipse Width="8" Height="8" Fill="#FBBF24" Margin="0,0,9,0" VerticalAlignment="Center"/>
+                <TextBlock x:Name="ConnectionStatus" Text="Не подключено" Foreground="#FDE68A" TextWrapping="Wrap" FontWeight="SemiBold"/>
+              </StackPanel>
             </Border>
-            <Border Grid.Row="3" Background="{StaticResource Panel}" CornerRadius="12" Padding="14">
-                <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
-                    <TextBlock x:Name="JobStatus" Text="Ожидание" FontWeight="SemiBold" Margin="0,0,0,10"/>
-                    <TextBox Grid.Row="1" x:Name="OutputBox" Background="#0B1220" Foreground="#D1D5DB" FontFamily="Consolas" FontSize="12" IsReadOnly="True" TextWrapping="NoWrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"/>
+            <TextBlock Text="OAuth-токен Яндекс Полигона" Foreground="{StaticResource Muted}" Margin="0,0,0,7"/>
+            <PasswordBox x:Name="TokenBox" PasswordChanged="TokenChanged" Margin="0,0,0,10" ToolTip="Токен используется для прямого подключения к Яндексу"/>
+            <Button Content="Проверить подключение" Click="ConnectClick" Style="{StaticResource PrimaryButton}" Margin="0,0,0,10"/>
+            <CheckBox x:Name="SaveTokenCheck" Margin="0,0,0,4">
+              <TextBlock Text="Разрешить фоновую работу" TextWrapping="Wrap"/>
+            </CheckBox>
+            <TextBlock Style="{StaticResource SubtleLabel}" Text="Сохранение токена включается только с согласия (Windows DPAPI)." TextWrapping="Wrap" Margin="0,0,0,22"/>
+            <Border Height="1" Background="{StaticResource Stroke}" Margin="0,0,0,20"/>
+
+            <TextBlock Text="РЕЗЕРВНОЕ КОПИРОВАНИЕ" Style="{StaticResource SectionHeading}"/>
+            <TextBlock Text="Папка Яндекс Диска (пусто = весь Диск)" Margin="0,0,0,6" TextWrapping="Wrap"/>
+            <Grid Margin="0,0,0,16">
+              <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="7"/><ColumnDefinition Width="78"/></Grid.ColumnDefinitions>
+              <TextBox x:Name="SourceBox" Grid.Column="0" ToolTip="Оставьте пустым для всего Яндекс Диска"/>
+              <Button Grid.Column="2" Content="Файлы" Click="ListClick" Style="{StaticResource QuietButton}" ToolTip="Показать список облачных файлов" Padding="8,4"/>
+            </Grid>
+            <TextBlock Text="Папка назначения на ПК" Margin="0,0,0,6"/>
+            <Grid Margin="0,0,0,15">
+              <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="7"/><ColumnDefinition Width="78"/></Grid.ColumnDefinitions>
+              <TextBox x:Name="DestinationBox" Grid.Column="0" ToolTip="Выберите локальную папку или внешний диск"/>
+              <Button Grid.Column="2" Content="Выбрать" Click="BrowseClick" Style="{StaticResource QuietButton}" Padding="8,4"/>
+            </Grid>
+            <CheckBox x:Name="VerifyAfterCopy" IsChecked="True" Margin="0,0,0,16" Content="Проверять файлы после копирования"/>
+            <Button x:Name="StartButton" Content="＋  Добавить в очередь" Click="StartClick" Style="{StaticResource PrimaryButton}" MinHeight="46"/>
+            <TextBlock Text="Файлы на ПК не удаляются автоматически." Foreground="#A9C8DD" FontSize="11" TextWrapping="Wrap" Margin="0,12,0,0"/>
+          </StackPanel>
+        </ScrollViewer>
+      </Border>
+
+      <!-- Main working area with purposeful tabs and global output -->
+      <Grid Grid.Column="2">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="*" MinHeight="260"/>
+          <RowDefinition Height="16"/>
+          <RowDefinition Height="195"/>
+        </Grid.RowDefinitions>
+        <TabControl x:Name="WorkspaceTabs" Grid.Row="0" SelectedIndex="0">
+          <TabItem Header="Очередь заданий">
+            <Border Style="{StaticResource PanelCard}" Padding="19,17">
+              <Grid>
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="Auto"/>
+                  <RowDefinition Height="Auto"/>
+                  <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid Margin="0,0,0,14">
+                  <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                  <StackPanel>
+                    <TextBlock Text="Ваши резервные копии" FontSize="19" FontWeight="SemiBold"/>
+                    <TextBlock Text="Очередь сохраняется на ПК и восстанавливается после сбоев" Foreground="{StaticResource Muted}" FontSize="12" Margin="0,3,0,0"/>
+                  </StackPanel>
+                  <Border Grid.Column="1" Background="#1D3546" CornerRadius="8" Padding="10,5" VerticalAlignment="Center">
+                    <TextBlock Text="SQLite · локально" Foreground="#B9DCFC" FontSize="12"/>
+                  </Border>
                 </Grid>
+                <WrapPanel Grid.Row="1" Margin="0,0,0,12">
+                  <Button Content="Пауза" Click="PauseJobClick" Margin="0,0,7,7"/>
+                  <Button Content="Продолжить" Click="ResumeClick" Margin="0,0,7,7"/>
+                  <Button Content="Отменить" Click="CancelJobClick" Style="{StaticResource DangerButton}" Margin="0,0,7,7"/>
+                  <Button Content="Проверить" Click="VerifySelectedClick" Margin="0,0,7,7"/>
+                  <Button Content="Открыть отчёт" Click="OpenReportClick" Margin="0,0,7,7"/>
+                </WrapPanel>
+                <Border Grid.Row="2" CornerRadius="9" Background="{StaticResource InputBg}" BorderBrush="{StaticResource Stroke}" BorderThickness="1" Padding="9">
+                  <Grid>
+                    <ListBox x:Name="JobsList" HorizontalContentAlignment="Stretch">
+                      <ListBox.ItemTemplate>
+                        <DataTemplate>
+                          <Border Padding="13,10" Background="#1A2B41" CornerRadius="8" BorderBrush="#33475F" BorderThickness="1">
+                            <Grid>
+                              <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                              <StackPanel>
+                                <TextBlock Text="{Binding Kind}" FontWeight="SemiBold" FontSize="13"/>
+                                <TextBlock Text="{Binding Source}" Foreground="#CED9E8" Margin="0,4,0,0" FontSize="12"/>
+                                <TextBlock Text="{Binding Destination}" Foreground="#9EB1C6" FontSize="11" TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
+                              </StackPanel>
+                              <Border Grid.Column="1" Background="#304760" CornerRadius="6" Padding="10,5" Margin="12,0,0,0" VerticalAlignment="Top">
+                                <TextBlock Text="{Binding State}" Foreground="#E8F1FF" FontWeight="SemiBold" FontSize="11"/>
+                              </Border>
+                            </Grid>
+                          </Border>
+                        </DataTemplate>
+                      </ListBox.ItemTemplate>
+                    </ListBox>
+                    <StackPanel IsHitTestVisible="False" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="25">
+                      <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                          <Setter Property="Visibility" Value="Collapsed"/>
+                          <Style.Triggers><DataTrigger Binding="{Binding HasItems, ElementName=JobsList}" Value="False"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+                        </Style>
+                      </StackPanel.Style>
+                      <TextBlock Text="Пока нет заданий" FontSize="17" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                      <TextBlock Text="Выберите папку слева и добавьте первое копирование" Foreground="{StaticResource Muted}" TextWrapping="Wrap" TextAlignment="Center" Margin="0,8,0,0"/>
+                    </StackPanel>
+                  </Grid>
+                </Border>
+              </Grid>
             </Border>
-            <TextBlock Grid.Row="4" Foreground="#9CA3AF" FontSize="12" TextWrapping="Wrap" Margin="0,12,0,0" Text="Без телеметрии · Только rclone copy (без удаления) · Обычная проверка rclone check не заменяет полноценный аудит резервной копии"/>
-        </Grid>
+          </TabItem>
+
+          <TabItem Header="Фото из безлимита">
+            <Border Style="{StaticResource PanelCard}" Padding="0">
+              <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="20,18">
+                <StackPanel>
+                  <TextBlock Text="Спасение фотографий из безлимита" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,7"/>
+                  <TextBlock Text="Сначала собираем список, затем переносим в обычную папку облака и скачиваем на ПК с проверкой. Перенос может расходовать квоту Яндекс Диска." Foreground="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,0,0,18"/>
+                  <Border Background="#27384C" BorderBrush="#41617F" BorderThickness="1" CornerRadius="10" Padding="16" Margin="0,0,0,16">
+                    <StackPanel>
+                      <TextBlock Text="Главное действие" Foreground="#BFD5F6" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,9"/>
+                      <Button Content="Спасти фото: полный мастер" Click="UnlimitedRescueClick" Style="{StaticResource PrimaryButton}" MinHeight="46" HorizontalAlignment="Stretch" Margin="0,0,0,10"/>
+                      <TextBlock Text="Изменения в облаке выполняются только после подтверждения." Foreground="#C2D5E7" FontSize="12" TextWrapping="Wrap"/>
+                    </StackPanel>
+                  </Border>
+                  <Grid Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="10"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                    <Button Grid.Column="0" Content="Проверить квоту" Click="UnlimitedQuotaClick"/>
+                    <Button Grid.Column="2" Content="Открыть Chrome для входа" Click="UnlimitedChromeClick"/>
+                  </Grid>
+                  <Border Background="#132438" CornerRadius="8" Padding="12" Margin="0,0,0,15">
+                    <TextBlock x:Name="UnlimitedQuotaStatus" Text="Квота не проверена" Foreground="#C9DCEF" TextWrapping="Wrap"/>
+                  </Border>
+                  <Expander Header="Пошаговые действия и восстановление" IsExpanded="False" Margin="0,0,0,10">
+                    <StackPanel Margin="0,13,0,2">
+                      <Button Content="1  ·  Собрать список (без изменений)" Click="UnlimitedListClick" HorizontalContentAlignment="Left" Margin="0,0,0,8"/>
+                      <Button Content="2  ·  Перенести в обычную папку…" Click="UnlimitedMoveClick" HorizontalContentAlignment="Left" Margin="0,0,0,8"/>
+                      <Button Content="3  ·  Проверить список и перенос" Click="UnlimitedStateClick" HorizontalContentAlignment="Left" Margin="0,0,0,8"/>
+                      <Button Content="4  ·  Скачать и проверить" Click="UnlimitedDownloadClick" HorizontalContentAlignment="Left" Margin="0,0,0,8"/>
+                      <Button Content="Очистить браузерную сессию" Click="UnlimitedClearProfileClick" Style="{StaticResource DangerButton}" HorizontalContentAlignment="Left" Margin="0,0,0,10"/>
+                      <TextBox x:Name="UnlimitedScriptBox" IsReadOnly="True" Visibility="Collapsed"/>
+                    </StackPanel>
+                  </Expander>
+                  <TextBlock Text="Готовым считается только локально скачанный и проверенный файл. Частичные результаты сохраняются в отчёте." Foreground="#FCD58B" TextWrapping="Wrap" FontSize="12" Margin="0,8,0,0"/>
+                </StackPanel>
+              </ScrollViewer>
+            </Border>
+          </TabItem>
+
+          <TabItem Header="Настройки">
+            <Border Style="{StaticResource PanelCard}" Padding="0">
+              <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="20,18">
+                <StackPanel>
+                  <TextBlock Text="Настройки копирования" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                  <TextBlock Text="Параметры применяются к новым заданиям" Style="{StaticResource SubtleLabel}" Margin="0,0,0,22"/>
+                  <TextBlock Text="Потоки передачи" Margin="0,0,0,5"/>
+                  <Slider x:Name="TransfersSlider" Minimum="1" Maximum="32" Value="8" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="TransfersChanged" Margin="0,0,0,13"/>
+                  <TextBlock Text="Лимит скорости (КиБ/с, 0 — без ограничения)" Margin="0,0,0,6"/>
+                  <TextBox x:Name="BandwidthBox" Text="0" Margin="0,0,0,23"/>
+                  <Border Height="1" Background="{StaticResource Stroke}" Margin="0,0,0,18"/>
+                  <TextBlock Text="Расписание" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,12"/>
+                  <Grid Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="1.4*"/><ColumnDefinition Width="14"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                      <TextBlock Text="Дата запуска (необязательно)" Style="{StaticResource SubtleLabel}" Margin="0,0,0,6"/>
+                      <DatePicker x:Name="ScheduleDate"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2">
+                      <TextBlock Text="Время, ЧЧ:мм" Style="{StaticResource SubtleLabel}" Margin="0,0,0,6"/>
+                      <TextBox x:Name="ScheduleTime" Text="09:00" ToolTip="ЧЧ:мм"/>
+                    </StackPanel>
+                  </Grid>
+                  <CheckBox x:Name="RecurringDailyCheck" Content="Повторять копирование ежедневно" Margin="0,0,0,23"/>
+                  <Border Height="1" Background="{StaticResource Stroke}" Margin="0,0,0,18"/>
+                  <TextBlock Text="Безопасность и фоновая работа" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,12"/>
+                  <CheckBox x:Name="AutostartCheck" Content="Запускать фоновый Worker при входе в Windows" Checked="AutostartChanged" Unchecked="AutostartChanged" Margin="0,0,0,12"/>
+                  <Button Content="Удалить сохранённый OAuth-токен" Click="DeleteTokenClick" Style="{StaticResource DangerButton}" HorizontalAlignment="Left" Margin="0,0,0,10"/>
+                  <TextBlock Style="{StaticResource SubtleLabel}" Text="Данные копирования и отчёты остаются только на этом компьютере. Токен хранится через DPAPI при явном согласии." TextWrapping="Wrap"/>
+                </StackPanel>
+              </ScrollViewer>
+            </Border>
+          </TabItem>
+        </TabControl>
+
+        <Border Grid.Row="2" Style="{StaticResource PanelCard}" Padding="16,12">
+          <Grid>
+            <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+            <Grid Margin="0,0,0,9">
+              <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+              <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <Ellipse Width="7" Height="7" Fill="#51D7C2" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                <TextBlock x:Name="JobStatus" Text="Ожидание" FontWeight="SemiBold"/>
+                <TextBlock Text="  ·  Журнал операций" Foreground="{StaticResource Muted}"/>
+              </StackPanel>
+              <Button x:Name="CancelButton" Grid.Column="1" Content="Остановить проверку" Click="CancelClick" IsEnabled="False" Style="{StaticResource DangerButton}" MinHeight="30" Padding="10,4" Margin="0,0,8,0"/>
+              <Button Grid.Column="2" Content="Очистить вывод" Click="ClearClick" Style="{StaticResource QuietButton}" MinHeight="30" Padding="10,4"/>
+            </Grid>
+            <TextBox Grid.Row="1" x:Name="OutputBox" Background="#0B1727" BorderBrush="#2B4058" Foreground="#D5E3F5"
+                     FontFamily="Consolas" FontSize="12" IsReadOnly="True" TextWrapping="NoWrap" AcceptsReturn="True"
+                     VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" VerticalContentAlignment="Top"/>
+          </Grid>
+        </Border>
+      </Grid>
     </Grid>
+
+    <Border Grid.Row="2" Background="#111D2E" BorderBrush="#2B3D55" BorderThickness="0,1,0,0" Padding="24,9">
+      <TextBlock Text="Локальная обработка · Только rclone copy (без удаления) · Отчёты сохраняются на вашем ПК" Foreground="{StaticResource Muted}" FontSize="11"/>
+    </Border>
+  </Grid>
 </Window>
