@@ -1,0 +1,9 @@
+# Keep the JavaScript helper byte-for-byte identical across Linux and Windows checkouts.
+# Its exact bytes are SHA256-pinned by UnlimitedPhotos.cs.
+tools/yd.js text eol=lf
+*.js text eol=lf
+*.py text eol=lf
+*.cs text eol=lf
+*.csproj text eol=lf
+*.xaml text eol=lf
+*.yml text eol=lf

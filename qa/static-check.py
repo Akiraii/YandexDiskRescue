@@ -18,7 +18,14 @@ assert handlers<=methods,f'Missing event handlers: {handlers-methods}'
 print('[PASS] WPF event handlers:',len(handlers))
 helper=base/'tools/yd.js'
 hash=hashlib.sha256(helper.read_bytes()).hexdigest().upper()
-assert hash in (base/'YandexDiskRescue/Services/UnlimitedPhotos.cs').read_text(encoding='utf-8')
+source=(base/'YandexDiskRescue/Services/UnlimitedPhotos.cs').read_text(encoding='utf-8')
+pin=re.search(r'string\.Equals\(actual,\s*"([0-9A-Fa-f]{64})"',source)
+if pin is None:
+    raise RuntimeError('Pinned helper SHA256 not found in UnlimitedPhotos.cs')
+expected=pin.group(1).upper()
+if hash != expected:
+    normalized=hashlib.sha256(helper.read_bytes().replace(b'\r\n',b'\n')).hexdigest().upper()
+    raise RuntimeError(f'yd.js SHA256 mismatch: checkout={hash}; expected={expected}; LF-normalized={normalized}. Check .gitattributes checkout EOL and source integrity.')
 print('[PASS] Pinned yd.js SHA256:',hash)
 subprocess.run(['node','--check',str(helper)],check=True)
 print('[PASS] Node.js syntax')
