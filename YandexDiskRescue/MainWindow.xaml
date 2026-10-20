@@ -37,44 +37,54 @@
         <ColumnDefinition Width="18"/>
         <ColumnDefinition Width="*"/>
       </Grid.ColumnDefinitions>
-      <!-- Stable copy/connect controls in the left column -->
-      <Border Grid.Column="0" Style="{StaticResource PanelCard}" Padding="19,18">
-        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-          <StackPanel>
-            <TextBlock Text="ПОДКЛЮЧЕНИЕ" Style="{StaticResource SectionHeading}"/>
-            <Border Background="#202E40" CornerRadius="8" Padding="10,9" Margin="0,0,0,16">
-              <StackPanel Orientation="Horizontal">
-                <Ellipse Width="8" Height="8" Fill="#FBBF24" Margin="0,0,9,0" VerticalAlignment="Center"/>
-                <TextBlock x:Name="ConnectionStatus" Text="Не подключено" Foreground="#FDE68A" TextWrapping="Wrap" FontWeight="SemiBold"/>
-              </StackPanel>
-            </Border>
-            <TextBlock Text="OAuth-токен Яндекс Полигона" Foreground="{StaticResource Muted}" Margin="0,0,0,7"/>
-            <PasswordBox x:Name="TokenBox" PasswordChanged="TokenChanged" Margin="0,0,0,10" ToolTip="Токен используется для прямого подключения к Яндексу"/>
-            <Button Content="Проверить подключение" Click="ConnectClick" Style="{StaticResource PrimaryButton}" Margin="0,0,0,10"/>
-            <CheckBox x:Name="SaveTokenCheck" Margin="0,0,0,4">
-              <TextBlock Text="Разрешить фоновую работу" TextWrapping="Wrap"/>
-            </CheckBox>
-            <TextBlock Style="{StaticResource SubtleLabel}" Text="Сохранение токена включается только с согласия (Windows DPAPI)." TextWrapping="Wrap" Margin="0,0,0,22"/>
-            <Border Height="1" Background="{StaticResource Stroke}" Margin="0,0,0,20"/>
+      <!-- Compact controls: all primary actions visible without a scrollbar at 690px window height -->
+      <Border Grid.Column="0" Style="{StaticResource PanelCard}" Padding="16,13">
+        <StackPanel VerticalAlignment="Top">
+          <TextBlock Text="ПОДКЛЮЧЕНИЕ" Style="{StaticResource SectionHeading}" Margin="0,0,0,7"/>
+          <Border Background="#202E40" CornerRadius="8" Padding="10,7" Margin="0,0,0,10">
+            <StackPanel Orientation="Horizontal">
+              <Ellipse Width="8" Height="8" Fill="#FBBF24" Margin="0,0,9,0" VerticalAlignment="Center"/>
+              <TextBlock x:Name="ConnectionStatus" Text="Не подключено" Foreground="#FDE68A" TextTrimming="CharacterEllipsis" FontWeight="SemiBold"/>
+            </StackPanel>
+          </Border>
+          <TextBlock Text="OAuth-токен" Foreground="{StaticResource Muted}" FontSize="12" Margin="0,0,0,4"
+                     ToolTip="OAuth-токен Яндекс Полигона"/>
+          <PasswordBox x:Name="TokenBox" PasswordChanged="TokenChanged" MinHeight="34" Margin="0,0,0,8"
+                       ToolTip="Токен используется только для подключения к Яндексу"/>
+          <Button Content="Проверить подключение" Click="ConnectClick" Style="{StaticResource PrimaryButton}"
+                  MinHeight="38" Padding="9,6" Margin="0,0,0,9"/>
+          <CheckBox x:Name="SaveTokenCheck" Margin="0,0,0,10" MinHeight="22"
+                    ToolTip="Только с вашего согласия токен сохраняется через Windows DPAPI для фонового копирования">
+            <TextBlock Text="Фоновая работа (DPAPI)"/>
+          </CheckBox>
+          <Border Height="1" Background="{StaticResource Stroke}" Margin="0,0,0,11"/>
 
-            <TextBlock Text="РЕЗЕРВНОЕ КОПИРОВАНИЕ" Style="{StaticResource SectionHeading}"/>
-            <TextBlock Text="Папка Яндекс Диска (пусто = весь Диск)" Margin="0,0,0,6" TextWrapping="Wrap"/>
-            <Grid Margin="0,0,0,16">
-              <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="7"/><ColumnDefinition Width="78"/></Grid.ColumnDefinitions>
-              <TextBox x:Name="SourceBox" Grid.Column="0" ToolTip="Оставьте пустым для всего Яндекс Диска"/>
-              <Button Grid.Column="2" Content="Файлы" Click="ListClick" Style="{StaticResource QuietButton}" ToolTip="Показать список облачных файлов" Padding="8,4"/>
-            </Grid>
-            <TextBlock Text="Папка назначения на ПК" Margin="0,0,0,6"/>
-            <Grid Margin="0,0,0,15">
-              <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="7"/><ColumnDefinition Width="78"/></Grid.ColumnDefinitions>
-              <TextBox x:Name="DestinationBox" Grid.Column="0" ToolTip="Выберите локальную папку или внешний диск"/>
-              <Button Grid.Column="2" Content="Выбрать" Click="BrowseClick" Style="{StaticResource QuietButton}" Padding="8,4"/>
-            </Grid>
-            <CheckBox x:Name="VerifyAfterCopy" IsChecked="True" Margin="0,0,0,16" Content="Проверять файлы после копирования"/>
-            <Button x:Name="StartButton" Content="＋  Добавить в очередь" Click="StartClick" Style="{StaticResource PrimaryButton}" MinHeight="46"/>
-            <TextBlock Text="Файлы на ПК не удаляются автоматически." Foreground="#A9C8DD" FontSize="11" TextWrapping="Wrap" Margin="0,12,0,0"/>
-          </StackPanel>
-        </ScrollViewer>
+          <TextBlock Text="РЕЗЕРВНОЕ КОПИРОВАНИЕ" Style="{StaticResource SectionHeading}" Margin="0,0,0,8"/>
+          <TextBlock Text="Папка на Яндекс Диске" FontSize="12" Margin="0,0,0,4"
+                     ToolTip="Оставьте поле пустым для резервной копии всего Диска"/>
+          <Grid Margin="0,0,0,10">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="7"/><ColumnDefinition Width="74"/></Grid.ColumnDefinitions>
+            <TextBox x:Name="SourceBox" Grid.Column="0" MinHeight="35"
+                     ToolTip="Пусто = весь Яндекс Диск"/>
+            <Button Grid.Column="2" Content="Файлы" Click="ListClick" Style="{StaticResource QuietButton}"
+                    MinHeight="35" Padding="7,5" ToolTip="Посмотреть файлы в облаке"/>
+          </Grid>
+          <TextBlock Text="Папка сохранения на ПК" FontSize="12" Margin="0,0,0,4"/>
+          <Grid Margin="0,0,0,10">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="7"/><ColumnDefinition Width="74"/></Grid.ColumnDefinitions>
+            <TextBox x:Name="DestinationBox" Grid.Column="0" MinHeight="35"
+                     ToolTip="Локальная папка или внешний диск для резервной копии"/>
+            <Button Grid.Column="2" Content="Выбрать" Click="BrowseClick" Style="{StaticResource QuietButton}"
+                    MinHeight="35" Padding="7,5"/>
+          </Grid>
+          <CheckBox x:Name="VerifyAfterCopy" IsChecked="True" Margin="0,0,0,9" MinHeight="22"
+                    Content="Проверять после копирования"
+                    ToolTip="Проверить целостность скачанных файлов"/>
+          <Button x:Name="StartButton" Content="＋  Добавить в очередь" Click="StartClick"
+                  Style="{StaticResource PrimaryButton}" MinHeight="40" Padding="10,6"/>
+          <TextBlock Text="Локальные файлы не удаляются" Foreground="#A9C8DD" FontSize="11"
+                     Margin="0,8,0,0"/>
+        </StackPanel>
       </Border>
 
       <!-- Main working area with purposeful tabs and global output -->
