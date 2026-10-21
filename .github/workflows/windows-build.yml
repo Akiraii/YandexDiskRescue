@@ -14,15 +14,15 @@ jobs:
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: '1'
     steps:
       - name: Checkout source
-        uses: actions/checkout@v5
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
         with:
           persist-credentials: false
       - name: Setup .NET 8 SDK
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1
         with:
           dotnet-version: '8.0.x'
       - name: Setup Node.js 22
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
         with:
           node-version: '22.16.0'
       - name: Check source layout and helper checksum
@@ -97,7 +97,7 @@ jobs:
           if (!(Test-Path 'dist/YandexDiskRescue-Portable.zip')) { throw 'Portable ZIP missing' }
           if (!(Test-Path 'dist/YandexDiskRescue-Setup.exe')) { throw 'Installer missing' }
       - name: Upload produced Windows package
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         with:
           name: YandexDiskRescue-Windows-x64
           path: |
