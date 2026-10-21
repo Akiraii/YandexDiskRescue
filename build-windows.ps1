@@ -23,8 +23,7 @@ Write-Host 'Установка зафиксированной зависимос
 Push-Location $tools
 try {
     if (-not (Test-Path 'package-lock.json')) {
-        & $npm install --package-lock-only --ignore-scripts --no-audit --no-fund
-        if ($LASTEXITCODE -ne 0) { throw 'npm lock generation failed' }
+        throw 'Missing reviewed tools/package-lock.json. Refuse to resolve new dependencies at release build time.'
     }
     & $npm ci --omit=dev --ignore-scripts --no-audit --no-fund
     if ($LASTEXITCODE -ne 0) { throw 'npm ci failed' }

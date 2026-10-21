@@ -30,6 +30,27 @@ jobs:
         run: |
           python qa/static-check.py
           if ($LASTEXITCODE -ne 0) { throw 'Static validation failed' }
+      - name: Generate npm dependency lock for security review
+        shell: pwsh
+        run: |
+          Push-Location tools
+          try {
+            npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+            if ($LASTEXITCODE -ne 0) { throw 'npm lock generation failed' }
+            npm audit --omit=dev --audit-level=high
+            if ($LASTEXITCODE -ne 0) { throw 'High/Critical npm vulnerability or audit service unavailable' }
+          } finally { Pop-Location }
+      - name: Upload dependency lock for review
+        uses: actions/upload-artifact@v6
+        with:
+          name: YDR-npm-lock-review
+          path: tools/package-lock.json
+          if-no-files-found: error
+      - name: Security source regression checks
+        shell: pwsh
+        run: |
+          python qa/security-check.py
+          if ($LASTEXITCODE -ne 0) { throw 'Security source regression detected' }
       - name: Download fixed rclone and verify SHA-256
         shell: pwsh
         run: |
