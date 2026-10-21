@@ -31,7 +31,12 @@ public static class VerificationReport
         var counts=rows.GroupBy(x=>x.status).ToDictionary(x=>x.Key,x=>x.Count());
         string prefix=Path.Combine(ReportRoot, job.Id.ToString("N"));
         string csv=prefix+".csv",html=prefix+".html";
-        static string Csv(string v)=>"\""+v.Replace("\"","\"\"")+"\"";
+        static string Csv(string v)
+        {
+            // CSV quotation does not stop spreadsheet formula evaluation.
+            if (v.Length>0 && "=+-@\t\r\n".Contains(v[0])) v="'"+v;
+            return "\"" + v.Replace("\"","\"\"") + "\"";
+        }
         using(var writer=new StreamWriter(csv,false,new UTF8Encoding(true)))
         {
             writer.WriteLine("Статус;Путь");

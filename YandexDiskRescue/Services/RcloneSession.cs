@@ -11,11 +11,13 @@ namespace YandexDiskRescue.Services;
 public sealed class RcloneSession : IDisposable
 {
     private readonly string _tokenJson;
+    private readonly string _secret;
     private readonly string _executable;
     public RcloneSession(string token)
     {
         if (!System.Text.RegularExpressions.Regex.IsMatch(token,@"^[A-Za-z0-9_.-]{20,}$"))
             throw new ArgumentException("Некорректный формат OAuth-токена");
+        _secret=token;
         _executable=ResolveExecutable();
         _tokenJson=JsonSerializer.Serialize(new {
             access_token=token,token_type="OAuth",refresh_token="unused",expiry="2099-01-01T00:00:00Z"
@@ -23,15 +25,11 @@ public sealed class RcloneSession : IDisposable
     }
     private static string ResolveExecutable()
     {
-        var bundled=Path.Combine(AppContext.BaseDirectory,"tools","rclone.exe");
-        if(File.Exists(bundled))return bundled;
-        string? path=Environment.GetEnvironmentVariable("PATH");
-        foreach(var part in (path ?? "").Split(Path.PathSeparator))
-        {
-            try {var file=Path.Combine(part.Trim('"'),"rclone.exe");if(File.Exists(file))return file;}
-            catch { /* invalid PATH segment */ }
-        }
-        throw new FileNotFoundException("Нет rclone.exe. Переустановите полный комплект приложения");
+        // Never trust PATH when passing an OAuth token to a child process.
+        string bundled=Path.Combine(AppContext.BaseDirectory,"tools","rclone.exe");
+        if (!File.Exists(bundled))
+            throw new FileNotFoundException("Отсутствует встроенный rclone.exe: восстановите приложение из проверенного установщика.", bundled);
+        return bundled;
     }
     public async Task<int> RunAsync(string verb,IEnumerable<string> args,Action<string> output,CancellationToken ct)
     {
@@ -54,7 +52,7 @@ public sealed class RcloneSession : IDisposable
         process.Start();
         async Task Drain(StreamReader reader)
         {
-            while(await reader.ReadLineAsync(ct) is { } line)output(line);
+            while(await reader.ReadLineAsync(ct) is { } line)output(LogRedactor.Redact(line, _secret));
         }
         try
         {

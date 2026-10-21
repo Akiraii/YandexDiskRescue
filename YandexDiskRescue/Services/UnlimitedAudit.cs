@@ -79,7 +79,11 @@ public static class UnlimitedAudit
         var path = Path.Combine(VerificationReport.ReportRoot, job.Id.ToString("N") + "-photos.csv");
         using var w = new StreamWriter(path, false, new UTF8Encoding(true));
         w.WriteLine("Статус;Облачный путь");
-        static string Esc(string v) => "\"" + v.Replace("\"", "\"\"") + "\"";
+        static string Esc(string v)
+        {
+            if (v.Length>0 && "=+-@\t\r\n".Contains(v[0])) v="'"+v;
+            return "\"" + v.Replace("\"","\"\"") + "\"";
+        }
         foreach (var item in output) w.WriteLine(Esc(item.status) + ";" + Esc(item.src));
         return new UnlimitedSummary(snapshot.Expected, snapshot.Listed.Count, snapshot.Moved.Count,
             verified, missing, diff, notMoved, uncertain, path);

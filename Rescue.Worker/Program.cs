@@ -7,6 +7,7 @@ var store = new JobStore();
 string logPath = Path.Combine(JobStore.Root, "log", "worker.log");
 Directory.CreateDirectory(Path.GetDirectoryName(logPath)!);
 var logGate=new object();
+string? activeToken=null;
 void Log(string msg)
 {
     lock(logGate)
@@ -23,7 +24,7 @@ void Log(string msg)
                 }
                 File.Move(logPath,logPath+".1",true);
             }
-            File.AppendAllText(logPath, DateTime.Now.ToString("O") + " " + msg + Environment.NewLine);
+            File.AppendAllText(logPath, DateTime.Now.ToString("O") + " " + LogRedactor.Redact(msg, activeToken) + Environment.NewLine);
         }
         catch { /* log failures cannot terminate jobs */ }
     }
@@ -99,6 +100,7 @@ while(!cts.IsCancellationRequested)
     try
     {
         string? token=SecureTokenStore.Read();
+        activeToken=token;
         if(string.IsNullOrWhiteSpace(token))
         {
             State(job.Id,"Нужна авторизация","В приложении разрешите хранение токена для фоновой работы");
@@ -166,6 +168,7 @@ while(!cts.IsCancellationRequested)
     catch(Exception e) {Log("Сбой задания "+job.Id+": "+e.GetType().Name+" / "+e.Message);Retry(job.Id,e.Message);}
     finally
     {
+        activeToken=null;
         watchStop.Cancel();
         try {await watch;} catch(OperationCanceledException){}
     }

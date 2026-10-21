@@ -184,7 +184,8 @@ public static class UnlimitedPhotos
         var state=StateFolder;
         Directory.CreateDirectory(state);
         string node=Path.Combine(AppContext.BaseDirectory,"tools","node.exe");
-        var psi=new ProcessStartInfo(File.Exists(node)?node:"node.exe") { UseShellExecute=false,CreateNoWindow=true,RedirectStandardOutput=true,RedirectStandardError=true,WorkingDirectory=Path.GetDirectoryName(Path.GetFullPath(script))!,StandardOutputEncoding=System.Text.Encoding.UTF8,StandardErrorEncoding=System.Text.Encoding.UTF8 };
+        if (!File.Exists(node)) throw new FileNotFoundException("Отсутствует встроенный tools/node.exe. Выполнение браузерного помощника заблокировано.", node);
+        var psi=new ProcessStartInfo(node) { UseShellExecute=false,CreateNoWindow=true,RedirectStandardOutput=true,RedirectStandardError=true,WorkingDirectory=Path.GetDirectoryName(Path.GetFullPath(script))!,StandardOutputEncoding=System.Text.Encoding.UTF8,StandardErrorEncoding=System.Text.Encoding.UTF8 };
         if(!System.Text.RegularExpressions.Regex.IsMatch(expectedUid,@"^\d+$"))
             throw new InvalidOperationException("Не получен идентификатор аккаунта из API Яндекса");
         string endpoint="";
@@ -211,7 +212,7 @@ public static class UnlimitedPhotos
         using var ownedProcess=process;
         async Task Read(StreamReader reader)
         {
-            while (await reader.ReadLineAsync(token) is { } line) log(line);
+            while (await reader.ReadLineAsync(token) is { } line) log(LogRedactor.Redact(line));
         }
         try
         {
