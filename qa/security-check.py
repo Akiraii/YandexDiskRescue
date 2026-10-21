@@ -11,7 +11,8 @@ redact=get("YandexDiskRescue/Services/LogRedactor.cs")
 assert 'File.Exists(bundled)' in rclone and 'GetEnvironmentVariable("PATH")' not in rclone
 assert 'new ProcessStartInfo(node)' in photos and 'node:"node.exe"' not in photos
 assert 'LogRedactor.Redact' in rclone and 'LogRedactor.Redact' in photos and 'LogRedactor.Redact' in worker
-assert '"list" or "move"' in photos and '"list", "move"' in helper
+assert 'action is not ("list" or "move")' in photos
+assert "['list', 'move'].includes(action)" in helper
 assert '127.0.0.1' in photos and 'disk.yandex.ru' in helper
 assert 'DataProtectionScope.CurrentUser' in get("YandexDiskRescue/Services/SecureTokenStore.cs")
 assert 'UseShellExecute=false' in rclone

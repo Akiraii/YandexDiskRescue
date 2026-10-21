@@ -30,22 +30,36 @@ jobs:
         run: |
           python qa/static-check.py
           if ($LASTEXITCODE -ne 0) { throw 'Static validation failed' }
-      - name: Generate npm dependency lock for security review
+      - name: Audit locked Node dependencies
         shell: pwsh
         run: |
           Push-Location tools
           try {
-            npm install --package-lock-only --ignore-scripts --no-audit --no-fund
-            if ($LASTEXITCODE -ne 0) { throw 'npm lock generation failed' }
+            if (!(Test-Path package-lock.json)) { throw 'Missing committed dependency lock' }
             npm audit --omit=dev --audit-level=high
-            if ($LASTEXITCODE -ne 0) { throw 'High/Critical npm vulnerability or audit service unavailable' }
+            if ($LASTEXITCODE -ne 0) { throw 'High/Critical npm vulnerability or audit unavailable' }
           } finally { Pop-Location }
-      - name: Upload dependency lock for review
-        uses: actions/upload-artifact@v6
-        with:
-          name: YDR-npm-lock-review
-          path: tools/package-lock.json
-          if-no-files-found: error
+      - name: Audit NuGet dependencies (including transitive)
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          foreach ($project in @('YandexDiskRescue/YandexDiskRescue.csproj','Rescue.Worker/Rescue.Worker.csproj')) {
+            dotnet restore $project -p:NuGetAudit=true -p:NuGetAuditMode=all -p:NuGetAuditLevel=moderate
+            if ($LASTEXITCODE -ne 0) { throw "NuGet restore/audit failed: $project" }
+            $lines = dotnet list $project package --vulnerable --include-transitive --format json
+            if ($LASTEXITCODE -ne 0) { throw "NuGet vulnerability enumeration failed: $project" }
+            $data = ($lines -join "`n") | ConvertFrom-Json
+            foreach ($pr in $data.projects) {
+              foreach ($framework in $pr.frameworks) {
+                foreach ($pkg in @($framework.topLevelPackages) + @($framework.transitivePackages)) {
+                  if (!$pkg) { continue }
+                  foreach ($v in @($pkg.vulnerabilities)) {
+                    if ($v -and $v.severity -ge 2) { throw "NuGet moderate/high vulnerability: $($pkg.id) $($v.advisoryurl)" }
+                  }
+                }
+              }
+            }
+          }
       - name: Security source regression checks
         shell: pwsh
         run: |
