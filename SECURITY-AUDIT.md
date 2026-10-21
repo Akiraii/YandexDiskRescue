@@ -7,7 +7,7 @@ This document records **static source review** and **CI dependency auditing**. I
 ### Scope
 - Reviewed: Windows WPF GUI, Worker, shared services, embedded yd.js, installer and Windows build workflow.
 - Compared: KenGuru66/yandex-disk-rescue upstream yd.js, Windows/Linux backup scripts, token-setup scripts, VPS automation and SECURITY.md.
-- Third-party binaries: rclone version 1.75.2 is SHA-256 checked at build time; Node.js installed by setup-node, playwright-core locked with npm integrity; NuGet project references pinned and dependency audit enforced.
+- Third-party binaries: rclone version 1.75.2 is SHA-256 checked at build time; Node.js 22.23.3 installed by setup-node, playwright-core locked with npm integrity; NuGet project references pinned and dependency audit enforced.
 - **Not inspected fully**: binary implementation of rclone, Chromium, Node runtime, Windows and every transitive native library; no dynamic code execution under the user's Windows session.
 
 ### Findings and remediations
@@ -22,6 +22,7 @@ This document records **static source review** and **CI dependency auditing**. I
 | SEC-06 | High residual | Chrome's DevTools TCP endpoint on localhost can be accessed by other local processes while it is open. | OPEN: separate locked-down browser profile, dynamic random loopback port and user confirmation reduce exposure, **but do not eliminate it**. Stronger solution: replace TCP CDP with a pipe or application-owned browser context. |
 | SEC-07 | Medium residual | Unsigned, per-user-writable Windows installation; same-user malware may tamper with the EXE or bundled tools. | OPEN: code-sign and verify distributed packages; use a trusted Windows PC without malware. |
 | SEC-08 | Critical to data availability | Internal Yandex photo API changes cloud paths and quota; partial moves/retries may be ambiguous. | REQUIRES LIVE TEST: manifest, quota check, explicit consent, copy-only and post-download content verification are implemented; API correctness not established. |
+| SEC-10 | Medium | Outdated bundled Node.js 22.16.0 missed 2026 security patches. | FIXED: CI now packages pinned Node.js 22.23.3 (pending newer Oct 21 security release). |
 | SEC-09 | Unknown | Possible other outgoing destinations or sensitive data in runtime traffic. | NOT VERIFIED: packet capture/ETW and network allowlist review required during a real test. |
 
 ### Source-level observations
