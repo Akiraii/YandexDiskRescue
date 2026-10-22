@@ -16,6 +16,10 @@ methods=set(re.findall(r'\b(?:private|public)\s+(?:async\s+)?(?:void|Task<bool>|
 handlers=set(re.findall(r'\b(?:Click|Checked|Unchecked|ValueChanged|PasswordChanged)="([A-Za-z]\w+)"',xaml))
 assert handlers<=methods,f'Missing event handlers: {handlers-methods}'
 print('[PASS] WPF event handlers:',len(handlers))
+assert 'Click="OpenTokenPageClick"' in xaml
+assert 'https://yandex.ru/dev/disk/poligon/' in cs
+assert 'UseShellExecute = true' in cs
+print('[PASS] Official Yandex OAuth token page opens via the default browser')
 helper=base/'tools/yd.js'
 hash=hashlib.sha256(helper.read_bytes()).hexdigest().upper()
 source=(base/'YandexDiskRescue/Services/UnlimitedPhotos.cs').read_text(encoding='utf-8')

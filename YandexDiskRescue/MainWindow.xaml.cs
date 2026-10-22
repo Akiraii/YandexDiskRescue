@@ -36,6 +36,19 @@ public partial class MainWindow : Window
         _session?.Dispose(); _session = null;
         ConnectionStatus.Text = "Не подключено";
     }
+    // Only open the official Yandex page in the default browser; never intercept tokens.
+    private void OpenTokenPageClick(object sender, RoutedEventArgs e)
+    {
+        const string url = "https://yandex.ru/dev/disk/poligon/";
+        try
+        {
+            Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+        }
+        catch (Exception ex)
+        {
+            Append("Не удалось открыть Полигон Яндекса: " + ex.Message);
+        }
+    }
     private async void ConnectClick(object sender, RoutedEventArgs e)
     {
         if (_busy) return;

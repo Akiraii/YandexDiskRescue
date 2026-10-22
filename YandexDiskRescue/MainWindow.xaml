@@ -51,8 +51,19 @@
                      ToolTip="OAuth-токен Яндекс Полигона"/>
           <PasswordBox x:Name="TokenBox" PasswordChanged="TokenChanged" MinHeight="34" Margin="0,0,0,8"
                        ToolTip="Токен используется только для подключения к Яндексу"/>
-          <Button Content="Проверить подключение" Click="ConnectClick" Style="{StaticResource PrimaryButton}"
-                  MinHeight="38" Padding="9,6" Margin="0,0,0,9"/>
+          <Grid Margin="0,0,0,9">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="7"/>
+              <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Button Grid.Column="0" Content="Проверить" Click="ConnectClick"
+                    Style="{StaticResource PrimaryButton}" MinHeight="38" Padding="7,6"
+                    ToolTip="Проверить подключение с введённым OAuth-токеном"/>
+            <Button Grid.Column="2" Content="Получить токен ↗" Click="OpenTokenPageClick"
+                    Style="{StaticResource QuietButton}" MinHeight="38" Padding="7,6"
+                    ToolTip="Открыть официальный Полигон Яндекс Диска в браузере"/>
+          </Grid>
           <CheckBox x:Name="SaveTokenCheck" Margin="0,0,0,10" MinHeight="22"
                     ToolTip="Только с вашего согласия токен сохраняется через Windows DPAPI для фонового копирования">
             <TextBlock Text="Фоновая работа (DPAPI)"/>
