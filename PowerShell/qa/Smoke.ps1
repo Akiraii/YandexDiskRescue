@@ -47,4 +47,19 @@ finally {
     Remove-Item -LiteralPath $env:YDR_DATA_HOME -Recurse -Force -ErrorAction SilentlyContinue
     Remove-Item Env:YDR_DATA_HOME -ErrorAction SilentlyContinue
 }
+# Verify that the actual WPF visual tree loads under Windows PowerShell 5.1 (not just XML parsing).
+Add-Type -AssemblyName PresentationFramework,PresentationCore,WindowsBase
+$xr=[Xml.XmlReader]::Create((Join-Path $root 'MainWindow.xaml'))
+try {
+    $win=[Windows.Markup.XamlReader]::Load($xr)
+    foreach($name in @('TokenBox','AddJobButton','JobsList','PhotoRescueButton','OutputBox')){
+        if(-not $win.FindName($name)){throw "WPF missing element $name"}
+    }
+    $win.Close()
+} finally { $xr.Dispose() }
+Write-Host '[PASS] WPF XamlReader and named controls'
+# The background worker must exit cleanly with an empty queue and no OAuth token.
+& (Join-Path $root 'YDR.Worker.ps1') -SinglePass
+Write-Host '[PASS] Background PS worker starts and exits'
+
 Write-Host '[PASS] PowerShell GUI smoke suite'

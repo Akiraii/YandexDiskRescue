@@ -5,7 +5,8 @@ $ErrorActionPreference='Stop'
 Import-Module (Join-Path $PSScriptRoot 'YDR.Core.psm1') -Force
 Initialize-YdrData
 $mutexName='Local\YDR_PS_Worker_'+([Security.Principal.WindowsIdentity]::GetCurrent().User.Value -replace '[^A-Za-z0-9_-]','_')
-$singleton=New-Object Threading.Mutex($true,$mutexName,[ref]$created)
+$created=$false
+$singleton=[Threading.Mutex]::new($true,$mutexName,[ref]$created)
 if (-not $created) { $singleton.Dispose(); return }
 
 function Set-JobRetry([object]$Job,[string]$Reason) {

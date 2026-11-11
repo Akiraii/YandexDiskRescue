@@ -27,7 +27,7 @@ jobs:
       - name: PowerShell 5.1 syntax and offline tests
         shell: pwsh
         run: |
-          & "$env:WINDIR\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -NonInteractive -ExecutionPolicy Bypass -File 'PowerShell/qa/Smoke.ps1'
+          & "$env:WINDIR\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -NonInteractive -Sta -ExecutionPolicy Bypass -File 'PowerShell/qa/Smoke.ps1'
           if ($LASTEXITCODE -ne 0) { throw 'PowerShell 5.1 tests failed' }
       - name: Verify helper and audit npm packages
         shell: pwsh
