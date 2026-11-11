@@ -1,6 +1,8 @@
 ﻿#requires -Version 5.1
 # PowerShell-only core for Yandex Disk Rescue. No dynamically compiled C#.
 Set-StrictMode -Version 2.0
+# Windows PowerShell 5.1 does not auto-load the framework assembly containing DPAPI.
+Add-Type -AssemblyName System.Security -ErrorAction Stop
 $script:YdrProgramRoot = $PSScriptRoot
 $script:YdrDataRoot = if ($env:YDR_DATA_HOME) { [IO.Path]::GetFullPath($env:YDR_DATA_HOME) } else { Join-Path $env:LOCALAPPDATA 'YandexDiskRescue\PowerShell' }
 $script:YdrMutexName = 'Local\YDR_PS_Queue_' + ([Security.Principal.WindowsIdentity]::GetCurrent().User.Value -replace '[^a-zA-Z0-9_-]', '_')
