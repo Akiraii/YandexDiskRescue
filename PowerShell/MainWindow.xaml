@@ -1,0 +1,165 @@
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Yandex Disk Rescue · PowerShell" Width="1200" Height="780"
+        MinWidth="1000" MinHeight="700" WindowStartupLocation="CenterScreen"
+        Background="#0D1524" FontFamily="Segoe UI" FontSize="13" Foreground="#EAF2FF">
+  <Window.Resources>
+    <SolidColorBrush x:Key="Panel" Color="#172538"/>
+    <SolidColorBrush x:Key="Stroke" Color="#32465E"/>
+    <SolidColorBrush x:Key="Raised" Color="#22364F"/>
+    <SolidColorBrush x:Key="Accent" Color="#307AEC"/>
+    <Style TargetType="TextBlock"><Setter Property="Foreground" Value="#EAF2FF"/></Style>
+    <Style TargetType="TextBox">
+      <Setter Property="Background" Value="#101D2F"/><Setter Property="Foreground" Value="#EAF2FF"/>
+      <Setter Property="CaretBrush" Value="#FFFFFF"/><Setter Property="BorderBrush" Value="{StaticResource Stroke}"/>
+      <Setter Property="MinHeight" Value="34"/><Setter Property="Padding" Value="8,6"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+    </Style>
+    <Style TargetType="PasswordBox">
+      <Setter Property="Background" Value="#101D2F"/><Setter Property="Foreground" Value="#EAF2FF"/>
+      <Setter Property="BorderBrush" Value="{StaticResource Stroke}"/><Setter Property="MinHeight" Value="34"/>
+      <Setter Property="Padding" Value="8,6"/>
+    </Style>
+    <Style TargetType="Button">
+      <Setter Property="Background" Value="{StaticResource Raised}"/>
+      <Setter Property="Foreground" Value="#EFF6FF"/><Setter Property="FontWeight" Value="SemiBold"/>
+      <Setter Property="BorderBrush" Value="#486283"/><Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="Cursor" Value="Hand"/><Setter Property="MinHeight" Value="35"/>
+      <Setter Property="Padding" Value="10,6"/>
+      <Setter Property="Template">
+        <Setter.Value><ControlTemplate TargetType="Button">
+          <Border x:Name="chrome" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="7" Padding="{TemplateBinding Padding}">
+            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" RecognizesAccessKey="True"/>
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="chrome" Property="BorderBrush" Value="#70A2F7"/></Trigger>
+            <Trigger Property="IsPressed" Value="True"><Setter TargetName="chrome" Property="Opacity" Value="0.72"/></Trigger>
+            <Trigger Property="IsEnabled" Value="False"><Setter TargetName="chrome" Property="Opacity" Value="0.45"/></Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate></Setter.Value>
+      </Setter>
+    </Style>
+    <Style x:Key="Primary" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+      <Setter Property="Background" Value="{StaticResource Accent}"/><Setter Property="BorderBrush" Value="#589AFF"/>
+      <Setter Property="Foreground" Value="White"/><Setter Property="MinHeight" Value="39"/>
+    </Style>
+    <Style x:Key="Danger" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+      <Setter Property="Foreground" Value="#FFD7D8"/><Setter Property="BorderBrush" Value="#8F5661"/>
+    </Style>
+    <Style TargetType="CheckBox"><Setter Property="Foreground" Value="#DFEAF8"/><Setter Property="MinHeight" Value="24"/></Style>
+    <Style TargetType="TabItem"><Setter Property="Foreground" Value="#EAF2FF"/><Setter Property="Padding" Value="16,9"/></Style>
+    <Style TargetType="ListView"><Setter Property="Background" Value="#101D2F"/><Setter Property="Foreground" Value="#EAF2FF"/><Setter Property="BorderBrush" Value="{StaticResource Stroke}"/></Style>
+    <Style TargetType="ListViewItem"><Setter Property="Foreground" Value="#EAF2FF"/><Setter Property="Padding" Value="3,4"/></Style>
+    <Style TargetType="GroupBox"><Setter Property="Foreground" Value="#DCEAFF"/><Setter Property="BorderBrush" Value="{StaticResource Stroke}"/></Style>
+  </Window.Resources>
+  <Grid>
+    <Grid.RowDefinitions><RowDefinition Height="65"/><RowDefinition Height="*"/><RowDefinition Height="26"/></Grid.RowDefinitions>
+    <Border Grid.Row="0" Background="#142135" BorderBrush="{StaticResource Stroke}" BorderThickness="0,0,0,1" Padding="20,10">
+      <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+        <StackPanel VerticalAlignment="Center"><TextBlock Text="YANDEX DISK RESCUE" FontSize="20" FontWeight="Bold"/><TextBlock Text="PowerShell Edition  •  Без C# и установки .NET SDK" Foreground="#9DB4D0" FontSize="11"/></StackPanel>
+        <Border Grid.Column="1" Background="#193D38" CornerRadius="12" Padding="12,6" VerticalAlignment="Center"><TextBlock Text="Локальное копирование · без телеметрии" Foreground="#A9EAD3" FontSize="11"/></Border>
+      </Grid>
+    </Border>
+    <Grid Grid.Row="1" Margin="16,14,16,12">
+      <Grid.ColumnDefinitions><ColumnDefinition Width="315"/><ColumnDefinition Width="14"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+      <Border Grid.Column="0" Background="{StaticResource Panel}" BorderBrush="{StaticResource Stroke}" BorderThickness="1" CornerRadius="12" Padding="15">
+        <StackPanel VerticalAlignment="Top">
+          <TextBlock Text="ПОДКЛЮЧЕНИЕ" Foreground="#A9BED9" FontWeight="SemiBold" FontSize="11" Margin="0,0,0,7"/>
+          <Border Background="#22354B" CornerRadius="6" Padding="9,6" Margin="0,0,0,10">
+            <TextBlock x:Name="ConnectionStatus" Text="Не подключено" Foreground="#FFCF82" FontWeight="SemiBold"/>
+          </Border>
+          <TextBlock Text="OAuth-токен Яндекса" Margin="0,0,0,4"/>
+          <PasswordBox x:Name="TokenBox" Margin="0,0,0,7" ToolTip="Токен из официального Полигона Яндекса"/>
+          <Grid Margin="0,0,0,7"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="7"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+            <Button x:Name="ConnectButton" Grid.Column="0" Content="Проверить" Style="{StaticResource Primary}"/>
+            <Button x:Name="TokenHelpButton" Grid.Column="2" Content="Получить токен ↗"/>
+          </Grid>
+          <CheckBox x:Name="SaveTokenCheck" Content="Фоновая работа (DPAPI)" Margin="0,0,0,8" ToolTip="Хранить токен зашифрованным для фонового PowerShell worker"/>
+          <Border Height="1" Background="{StaticResource Stroke}" Margin="0,0,0,11"/>
+          <TextBlock Text="РЕЗЕРВНОЕ КОПИРОВАНИЕ" Foreground="#A9BED9" FontWeight="SemiBold" FontSize="11" Margin="0,0,0,8"/>
+          <TextBlock Text="Папка на Яндекс Диске" Margin="0,0,0,4"/>
+          <Grid Margin="0,0,0,10"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="6"/><ColumnDefinition Width="74"/></Grid.ColumnDefinitions>
+            <TextBox x:Name="SourceBox" Grid.Column="0" ToolTip="Пусто = копировать весь Яндекс Диск"/>
+            <Button x:Name="ListFilesButton" Grid.Column="2" Content="Файлы"/>
+          </Grid>
+          <TextBlock Text="Папка сохранения на ПК" Margin="0,0,0,4"/>
+          <Grid Margin="0,0,0,10"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="6"/><ColumnDefinition Width="74"/></Grid.ColumnDefinitions>
+            <TextBox x:Name="DestinationBox" Grid.Column="0" ToolTip="Локальный или USB-диск"/>
+            <Button x:Name="BrowseButton" Grid.Column="2" Content="Выбрать"/>
+          </Grid>
+          <CheckBox x:Name="VerifyAfterCopy" IsChecked="True" Content="Проверять файлы после копирования" Margin="0,0,0,10"/>
+          <Button x:Name="AddJobButton" Content="＋  Добавить в очередь" Style="{StaticResource Primary}"/>
+          <TextBlock Text="Файлы на ПК не удаляются автоматически" Foreground="#98BAD7" FontSize="11" Margin="0,10,0,0"/>
+        </StackPanel>
+      </Border>
+      <Grid Grid.Column="2"><Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="11"/><RowDefinition Height="175"/></Grid.RowDefinitions>
+        <TabControl x:Name="WorkspaceTabs" Grid.Row="0" Background="{StaticResource Panel}" BorderBrush="{StaticResource Stroke}" Padding="6">
+          <TabItem Header="Очередь">
+            <Grid Margin="12"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+              <TextBlock Text="Задания сохраняются локально и продолжаются после перезапуска" Foreground="#A9BED9" Margin="0,3,0,11"/>
+              <WrapPanel Grid.Row="1" Margin="0,0,0,10">
+                <Button x:Name="PauseButton" Content="Пауза" Margin="0,0,8,5"/>
+                <Button x:Name="ResumeButton" Content="Продолжить" Margin="0,0,8,5"/>
+                <Button x:Name="CancelJobButton" Content="Отменить" Style="{StaticResource Danger}" Margin="0,0,8,5"/>
+                <Button x:Name="VerifyButton" Content="Проверить" Margin="0,0,8,5"/>
+                <Button x:Name="OpenReportButton" Content="Отчёт" Margin="0,0,8,5"/>
+              </WrapPanel>
+              <ListView x:Name="JobsList" Grid.Row="2" SelectionMode="Single" ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                <ListView.View><GridView>
+                  <GridViewColumn Header="Статус" DisplayMemberBinding="{Binding State}" Width="118"/>
+                  <GridViewColumn Header="Операция" DisplayMemberBinding="{Binding Kind}" Width="133"/>
+                  <GridViewColumn Header="Источник" DisplayMemberBinding="{Binding Source}" Width="150"/>
+                  <GridViewColumn Header="Назначение" DisplayMemberBinding="{Binding Destination}" Width="225"/>
+                </GridView></ListView.View>
+              </ListView>
+            </Grid>
+          </TabItem>
+          <TabItem Header="Фото из безлимита">
+            <ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel Margin="15">
+              <TextBlock Text="Фотографии из безлимита" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,8"/>
+              <TextBlock Text="Важное предупреждение: перенос меняет расположение файлов в Яндексе и расходует обычную квоту. Используется недокументированный веб-API. Сначала испытайте на тестовом аккаунте." TextWrapping="Wrap" Foreground="#F5CC91" Margin="0,0,0,15"/>
+              <Button x:Name="PhotoRescueButton" Content="Мастер: перенести, скачать, проверить" Style="{StaticResource Primary}" MinHeight="43" Margin="0,0,0,12"/>
+              <UniformGrid Columns="2" Rows="2">
+                <Button x:Name="PhotoQuotaButton" Content="Проверить квоту" Margin="0,0,7,7"/>
+                <Button x:Name="PhotoChromeButton" Content="Открыть Chrome для входа" Margin="0,0,0,7"/>
+                <Button x:Name="PhotoListButton" Content="1. Собрать список" Margin="0,0,7,0"/>
+                <Button x:Name="PhotoMoveButton" Content="2. Перенести в облаке…"/>
+              </UniformGrid>
+              <Button x:Name="PhotoDownloadButton" Content="3. Скачать перенесённое и проверить" Margin="0,11,0,11"/>
+              <Border Background="#23364A" CornerRadius="8" Padding="11">
+                <TextBlock x:Name="PhotoStatus" Text="Список фотографий ещё не получен" Foreground="#C8D7EA" TextWrapping="Wrap"/>
+              </Border>
+            </StackPanel></ScrollViewer>
+          </TabItem>
+          <TabItem Header="Настройки">
+            <ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel Margin="16">
+              <TextBlock Text="Параметры новых заданий" FontSize="19" FontWeight="SemiBold" Margin="0,0,0,14"/>
+              <TextBlock x:Name="TransfersLabel" Text="Параллельных потоков: 8"/>
+              <Slider x:Name="TransfersSlider" Minimum="1" Maximum="32" Value="8" TickFrequency="1" IsSnapToTickEnabled="True" Margin="0,6,0,12"/>
+              <TextBlock Text="Лимит скорости (КиБ/с, 0 — без ограничений)"/>
+              <TextBox x:Name="BandwidthBox" Text="0" Width="160" HorizontalAlignment="Left" Margin="0,5,0,15"/>
+              <TextBlock Text="Отложенный запуск (необязательно)" Margin="0,0,0,7"/>
+              <StackPanel Orientation="Horizontal"><DatePicker x:Name="ScheduleDate" Width="170"/><TextBox x:Name="ScheduleTime" Text="09:00" Width="88" Margin="9,0,0,0" ToolTip="Время ЧЧ:мм"/></StackPanel>
+              <CheckBox x:Name="DailyCheck" Content="Повторять ежедневно" Margin="0,12,0,10"/>
+              <CheckBox x:Name="AutostartCheck" Content="Запускать worker при входе в Windows" Margin="0,0,0,13"/>
+              <Button x:Name="RemoveTokenButton" Content="Удалить сохранённый OAuth-токен" Style="{StaticResource Danger}" HorizontalAlignment="Left" Margin="0,0,0,12"/>
+              <TextBlock Text="Токен сохраняется только с вашего согласия и защищён Windows DPAPI. Для проверки безлимита потребуется отдельный Chrome." Foreground="#A9BED9" TextWrapping="Wrap"/>
+            </StackPanel></ScrollViewer>
+          </TabItem>
+        </TabControl>
+        <Border Grid.Row="2" Background="{StaticResource Panel}" BorderBrush="{StaticResource Stroke}" BorderThickness="1" CornerRadius="10" Padding="10,8">
+          <Grid><Grid.RowDefinitions><RowDefinition Height="29"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+            <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+              <TextBlock x:Name="JobStatus" Text="Журнал · Ожидание" FontWeight="SemiBold" VerticalAlignment="Center"/>
+              <Button x:Name="ClearLogButton" Content="Очистить окно" Grid.Column="1" MinHeight="26" Padding="9,3"/>
+            </Grid>
+            <TextBox x:Name="OutputBox" Grid.Row="1" Background="#0E1B2D" IsReadOnly="True" FontFamily="Consolas" FontSize="12" TextWrapping="NoWrap" AcceptsReturn="True"
+                     VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"/>
+          </Grid>
+        </Border>
+      </Grid>
+    </Grid>
+    <Border Grid.Row="2" Background="#142135" Padding="18,5"><TextBlock FontSize="10" Foreground="#9DB4D0" Text="PowerShell 5.1 · rclone copy + check --download · Не удаляет исходные файлы"/></Border>
+  </Grid>
+</Window>

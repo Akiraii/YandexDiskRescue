@@ -1,0 +1,92 @@
+name: Yandex Disk Rescue - PowerShell GUI Portable
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'PowerShell/**'
+      - 'tools/**'
+      - '.github/workflows/powershell-windows.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  powershell-windows:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          persist-credentials: false
+      - name: Setup fixed Node.js
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
+        with:
+          node-version: '22.23.3'
+      - name: PowerShell 5.1 syntax and offline tests
+        shell: pwsh
+        run: |
+          & "$env:WINDIR\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -NonInteractive -ExecutionPolicy Bypass -File 'PowerShell/qa/Smoke.ps1'
+          if ($LASTEXITCODE -ne 0) { throw 'PowerShell 5.1 tests failed' }
+      - name: Verify helper and audit npm packages
+        shell: pwsh
+        run: |
+          $actual=(Get-FileHash -Algorithm SHA256 'tools/yd.js').Hash
+          $expected='F3A5EABC666F2A75B1A637A319F647A87B2201DAD3CF3650EF532A054BBABBD4'
+          if ($actual -ne $expected) { throw "yd.js hash mismatch: $actual" }
+          node --check 'tools/yd.js'
+          if ($LASTEXITCODE -ne 0) { throw 'yd.js syntax invalid' }
+          Push-Location tools
+          try {
+            npm audit --omit=dev --audit-level=high
+            if ($LASTEXITCODE -ne 0) { throw 'npm advisory check failed' }
+          } finally { Pop-Location }
+      - name: Download pinned official rclone
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $url='https://github.com/rclone/rclone/releases/download/v1.75.2/rclone-v1.75.2-windows-amd64.zip'
+          $archive=Join-Path $env:RUNNER_TEMP 'rclone.zip'
+          Invoke-WebRequest -Uri $url -OutFile $archive
+          $actual=(Get-FileHash -Algorithm SHA256 $archive).Hash
+          $expected='8A9DB2BAD1DC79A65B3348FD857069598E2AAB7CF4D118B77B1DF23055AFF818'
+          if ($actual -ne $expected) { throw "rclone SHA256 mismatch: $actual" }
+          Expand-Archive -Path $archive -DestinationPath (Join-Path $env:RUNNER_TEMP 'rclone')
+          $bin=Get-ChildItem (Join-Path $env:RUNNER_TEMP 'rclone') -Filter 'rclone.exe' -Recurse -File | Select-Object -First 1
+          if (!$bin) { throw 'Missing verified rclone binary' }
+          New-Item -ItemType Directory -Force 'PowerShell/tools' | Out-Null
+          Copy-Item $bin.FullName 'PowerShell/tools/rclone.exe'
+          & 'PowerShell/tools/rclone.exe' version
+          if ($LASTEXITCODE -ne 0) { throw 'rclone execution failed' }
+      - name: Package PowerShell GUI and locked dependencies
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          New-Item -ItemType Directory -Force 'PowerShell/tools' | Out-Null
+          Copy-Item 'tools/yd.js' 'PowerShell/tools/yd.js'
+          Copy-Item 'tools/package.json' 'PowerShell/tools/package.json'
+          Copy-Item 'tools/package-lock.json' 'PowerShell/tools/package-lock.json'
+          $node=(Get-Command node.exe).Source
+          Copy-Item $node 'PowerShell/tools/node.exe'
+          Push-Location 'PowerShell/tools'
+          try {
+            npm ci --omit=dev --ignore-scripts --no-audit --no-fund
+            if ($LASTEXITCODE -ne 0) { throw 'npm ci failed' }
+          } finally { Pop-Location }
+          New-Item -ItemType Directory -Force 'dist' | Out-Null
+          Compress-Archive -Path 'PowerShell/*' -DestinationPath 'dist/YDR-PowerShell-Portable.zip' -CompressionLevel Optimal
+          $found=@('PowerShell/YandexDiskRescue.ps1','PowerShell/YDR.Worker.ps1','PowerShell/YDR.Core.psm1','PowerShell/MainWindow.xaml','PowerShell/Start-YandexDiskRescue.cmd','PowerShell/tools/rclone.exe','PowerShell/tools/node.exe','PowerShell/tools/yd.js')
+          foreach($f in $found){if(!(Test-Path $f)){throw "Missing distribution file $f"}}
+          Get-ChildItem 'PowerShell' -Recurse -File | ForEach-Object {
+            [pscustomobject]@{Path=$_.FullName.Substring((Resolve-Path 'PowerShell').Path.Length+1);SHA256=(Get-FileHash $_.FullName -Algorithm SHA256).Hash}
+          } | Export-Csv 'dist/PS-SHA256.csv' -NoTypeInformation -Encoding UTF8
+      - name: Upload PowerShell Portable ZIP
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: YDR-PowerShell-Portable
+          path: |
+            dist/YDR-PowerShell-Portable.zip
+            dist/PS-SHA256.csv
+          if-no-files-found: error
+          retention-days: 14

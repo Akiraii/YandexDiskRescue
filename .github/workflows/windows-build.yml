@@ -1,7 +1,5 @@
-name: Yandex Disk Rescue - Windows executable
+name: Legacy C# Windows build (manual only)
 on:
-  push:
-    branches: [main, master]
   workflow_dispatch:
 permissions:
   contents: read
