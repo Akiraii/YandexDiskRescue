@@ -100,7 +100,11 @@ function Write-YdrJobsUnsafe([object[]]$Jobs) {
     $tmp=$path+'.'+[guid]::NewGuid().ToString('N')+'.tmp'
     [IO.File]::WriteAllText($tmp, $json, (New-Object Text.UTF8Encoding($false)))
     try {
-        if ([IO.File]::Exists($path)) { [IO.File]::Replace($tmp,$path,$null) }
+        if ([IO.File]::Exists($path)) {
+            $backup=$path+'.'+[guid]::NewGuid().ToString('N')+'.bak'
+            try { [IO.File]::Replace($tmp,$path,$backup) }
+            finally { if ([IO.File]::Exists($backup)) { [IO.File]::Delete($backup) } }
+        }
         else { [IO.File]::Move($tmp,$path) }
     }
     finally { if ([IO.File]::Exists($tmp)) { [IO.File]::Delete($tmp) } }
